@@ -38,7 +38,7 @@
         - flameshot
         - fonts-hack
         - tilix
-        - mlocate
+        - plocate
         - jq
         - mtr
 
