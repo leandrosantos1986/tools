@@ -8,7 +8,7 @@ Read the ubuntu.yml file before applying and be sure to understand everything th
 sudo apt update && sudo apt install ansible unzip git -y
 
 2- Clone this repository
-git clone https://github.com/caiodelgadonew/tools.git
+git clone https://github.com/leandrosantos1986/tools.git
 
 3- Apply the configuration
 ansible-playbook tools/ubuntu.yml --ask-become-pass
