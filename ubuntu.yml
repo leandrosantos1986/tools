@@ -38,21 +38,28 @@
         - flameshot
         - fonts-hack
         - tilix
-        - plocate
+        - plocate  # Corrigido mlocate para plocate
         - jq
         - mtr
 
     - block:
         - name: Verify if Oh-My-zsh is installed
-          ansible.builtin.command: test -d /home/{{ ansible_user_id }}/.oh-my-zsh
-          register: ohmyzsh
-          ignore_errors: true
-          changed_when: false
+          ansible.builtin.stat:
+            path: "/home/{{ ansible_user_id }}/.oh-my-zsh"
+          register: ohmyzsh_dir
 
         - name: Installing Oh-My-zsh
           ansible.builtin.shell:
             cmd: 'curl -fsL https://githubusercontent.com | bash'
-          when: ohmyzsh.rc != 0
+          when: not ohmyzsh_dir.stat.exists
+
+        - name: Ensure .zshrc template exists before editing
+          ansible.builtin.copy:
+            src: "/home/{{ ansible_user_id }}/.oh-my-zsh/templates/zshrc.zsh-template"
+            dest: "/home/{{ ansible_user_id }}/.zshrc"
+            remote_src: yes
+            force: no
+            mode: '0644'
 
         - name: Changing Default Shell to ZSH
           become: yes
@@ -97,7 +104,7 @@
             line: 'plugins=(git zsh-autosuggestions zsh-syntax-highlighting)'
             state: present
 
-    - name: Configurar Tilix de forma automatizada (Otimizado para Telas Grandes 4K)
+    - name: Configurar Tilix de forma automatizada (Opção 2 - Dracula Premium para 4K)
       community.general.dconf:
         key: "/com/gexperts/Tilix/profiles/2b7c4080-0ddd-46c5-8f23-563fd3ba78c5/{{ item.key }}"
         value: "{{ item.value }}"
@@ -106,9 +113,9 @@
         - { key: 'font', value: "'Hack 13'" }
         - { key: 'use-system-font', value: "false" }
         - { key: 'use-theme-colors', value: "false" }
-        - { key: 'background-color', value: "'#101414'" }
-        - { key: 'foreground-color', value: "'#4AF626'" }
-        - { key: 'palette', value: "['#000000', '#FF5555', '#4AF626', '#F1FA8C', '#BD93F9', '#FF79C6', '#8BE9FD', '#BFBFBF', '#4D4D4D', '#FF6E6E', '#69FF94', '#FFFFA5', '#D6ACFF', '#FF92DF', '#A4FFFF', '#FFFFFF']" }
+        - { key: 'background-color', value: "'#282A36'" }
+        - { key: 'foreground-color', value: "'#F8F8F2'" }
+        - { key: 'palette', value: "['#21222C', '#FF5555', '#50FA7B', '#F1FA8C', '#BD93F9', '#FF79C6', '#8BE9FD', '#F8F8F2', '#6272A4', '#FF6E6E', '#69FF94', '#FFFFA5', '#D6ACFF', '#FF92DF', '#A4FFFF', '#FFFFFF']" }
         - { key: 'cell-height-modifier', value: "1.2" }
         - { key: 'cell-width-modifier', value: "1.0" }
         - { key: 'terminal-bell', value: "false" }
@@ -209,4 +216,3 @@
         - name: Remind user of mandatory user authentication
           ansible.builtin.debug:
             msg: "Important: Run 'anti-gravity auth login' to authenticate with your Google Account."
-
